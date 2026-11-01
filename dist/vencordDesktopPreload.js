@@ -1,4 +1,4 @@
-// Vencord 2f80eadb
+// Vencord 6f070927
 // Standalone: false
 // Platform: win32
 // Updater Disabled: false
