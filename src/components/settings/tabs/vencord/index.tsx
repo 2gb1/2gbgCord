@@ -18,39 +18,153 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
-import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
 import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/Icons";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
-import { SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
-import { openContributorModal } from "@components/settings/tabs/plugins/ContributorModal";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import NoTrack from "@plugins/_core/noTrack";
 import SettingsPlugin from "@plugins/_core/settings";
-import { gitRemote } from "@shared/vencordUserAgent";
 import { IS_WINDOWS } from "@utils/constants";
 import { Margins } from "@utils/margins";
-import { isPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { promptToRestart } from "@utils/promptToRestart";
-import { Forms, React, useMemo, UserStore } from "@webpack/common";
+import { Forms, React } from "@webpack/common";
 
-import { DonateButtonComponent, isDonor } from "./DonateButton";
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
-const DEFAULT_DONATE_IMAGE = "https://cdn.discordapp.com/emojis/1026533090627174460.png";
-const SHIGGY_DONATE_IMAGE = "https://media.discordapp.net/stickers/1039992459209490513.png";
-const VENNIE_DONATOR_IMAGE = "https://cdn.discordapp.com/emojis/1238120638020063377.png";
-const COZY_CONTRIB_IMAGE = "https://cdn.discordapp.com/emojis/1026533070955872337.png";
-const DONOR_BACKGROUND_IMAGE = "https://media.discordapp.net/stickers/1311070116305436712.png?size=2048";
-const CONTRIB_BACKGROUND_IMAGE = "https://media.discordapp.net/stickers/1311070166481895484.png?size=2048";
+const SERVER_INVITE = "https://discord.gg/C3C7av8S9E";
+const BANNER_GIF = "https://i.pinimg.com/originals/22/c1/d7/22c1d7be4f7985fedc437fe58a578ceb.gif";
+
+// ستايل البطاقات السوداء الموحد لأقسام الصفحة
+const darkCardStyle: React.CSSProperties = {
+    background: "#050505",
+    backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 0)",
+    backgroundSize: "24px 24px",
+    border: "1px solid rgba(255, 255, 255, 0.12)",
+    borderRadius: "14px",
+    padding: "20px",
+    marginBottom: "16px",
+    boxShadow: "0 8px 28px rgba(0, 0, 0, 0.75)"
+};
 
 type KeysOfType<Object, Type> = {
     [K in keyof Object]: Object[K] extends Type ? K : never;
 }[keyof Object];
+
+// البانر الأسود الفخم مع النجوم البيضاء وتأثير الكتابة التلقائية
+function CustomSupportBanner() {
+    const fullText = "Welcome to 2gv5cord! If you want to support us or stay updated, join our Discord server.";
+    const [typedText, setTypedText] = React.useState("");
+
+    React.useEffect(() => {
+        let index = 0;
+        setTypedText("");
+        const timer = setInterval(() => {
+            if (index < fullText.length) {
+                setTypedText(prev => prev + fullText.charAt(index));
+                index++;
+            } else {
+                clearInterval(timer);
+            }
+        }, 40);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div
+            style={{
+                background: "#000000",
+                backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 0)",
+                backgroundSize: "22px 22px",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                borderRadius: "14px",
+                padding: "22px 24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 35px rgba(0, 0, 0, 0.95)",
+                marginBottom: "20px"
+            }}
+        >
+            <div style={{ zIndex: 2, maxWidth: "75%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    <span style={{
+                        color: "#ffffff",
+                        fontSize: "19px",
+                        fontWeight: 700,
+                        letterSpacing: "0.3px"
+                    }}>
+                        Support the Project
+                    </span>
+                    <span style={{
+                        background: "rgba(255, 255, 255, 0.1)",
+                        color: "#ffffff",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        padding: "2px 8px",
+                        borderRadius: "999px",
+                        border: "1px solid rgba(255, 255, 255, 0.25)"
+                    }}>
+                        2gv5cord
+                    </span>
+                </div>
+
+                <p style={{
+                    color: "#d1d1d6",
+                    margin: "0 0 16px 0",
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    minHeight: "22px",
+                    fontFamily: "monospace"
+                }}>
+                    {typedText}
+                    <span style={{ opacity: 0.75 }}>|</span>
+                </p>
+
+                <button
+                    onClick={() => VencordNative.native.openExternal(SERVER_INVITE)}
+                    style={{
+                        background: "#ffffff",
+                        color: "#000000",
+                        padding: "8px 18px",
+                        borderRadius: "8px",
+                        border: "none",
+                        fontWeight: 700,
+                        fontSize: "13px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        boxShadow: "0 4px 15px rgba(255, 255, 255, 0.25)",
+                        cursor: "pointer"
+                    }}
+                >
+                    Join Server
+                </button>
+            </div>
+
+            <div style={{ zIndex: 2 }}>
+                <img
+                    src={BANNER_GIF}
+                    alt="2gv5cord"
+                    style={{
+                        width: "76px",
+                        height: "76px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid rgba(255, 255, 255, 0.35)",
+                        boxShadow: "0 0 20px rgba(255, 255, 255, 0.15)"
+                    }}
+                />
+            </div>
+        </div>
+    );
+}
 
 function Switches() {
     const settings = useSettings(["useQuickCss", "enableReactDevtools", "frameless", "nativeTitleBar", "transparent", "winCtrlQ", "disableMinSize"]);
@@ -138,113 +252,94 @@ function Switches() {
 }
 
 function VencordSettings() {
-    const donateImage = useMemo(() =>
-        Math.random() > 0.5 ? DEFAULT_DONATE_IMAGE : SHIGGY_DONATE_IMAGE,
-        []
-    );
-
-    const user = UserStore?.getCurrentUser();
-
     return (
         <SettingsTab>
-            {isDonor(user?.id)
-                ? (
-                    <SpecialCard
-                        title="Donations"
-                        subtitle="Thank you for donating!"
-                        description="You can manage your perks at any time by messaging @vending.machine."
-                        cardImage={VENNIE_DONATOR_IMAGE}
-                        backgroundImage={DONOR_BACKGROUND_IMAGE}
-                        backgroundColor="#ED87A9"
-                    >
-                        <DonateButtonComponent />
-                    </SpecialCard>
-                )
-                : (
-                    <SpecialCard
-                        title="Support the Project"
-                        description="Please consider supporting the development of Vencord by donating!"
-                        cardImage={donateImage}
-                        backgroundImage={DONOR_BACKGROUND_IMAGE}
-                        backgroundColor="#c3a3ce"
-                    >
-                        <DonateButtonComponent />
-                    </SpecialCard>
-                )
-            }
+            {/* ستايل إضافي لتحويل الأزرار الداخلية في الصفحة للثيم الأسود والأبيض */}
+            <style>{`
+                .vc-2gv5-dark-wrapper button[class*="lookFilled"] {
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
+                    font-weight: 700 !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15) !important;
+                }
+                .vc-2gv5-dark-wrapper button[class*="lookFilled"]:hover {
+                    background-color: #e4e4e7 !important;
+                }
+            `}</style>
 
-            {isPluginDev(user?.id) && (
-                <SpecialCard
-                    title="Contributions"
-                    subtitle="Thank you for contributing!"
-                    description="Since you've contributed to Vencord you now have a cool new badge!"
-                    cardImage={COZY_CONTRIB_IMAGE}
-                    backgroundImage={CONTRIB_BACKGROUND_IMAGE}
-                    backgroundColor="#EDCC87"
-                    buttonTitle="See what you've contributed to"
-                    buttonOnClick={() => openContributorModal(user)}
-                />
-            )}
+            <div className="vc-2gv5-dark-wrapper">
+                {/* البانر الأسود الفخم */}
+                <CustomSupportBanner />
 
-            <section>
-                <Forms.FormTitle tag="h5">Quick Actions</Forms.FormTitle>
+                {/* قسم الإجراءات السريعة */}
+                <section style={darkCardStyle}>
+                    <Forms.FormTitle tag="h5" style={{ color: "#ffffff", marginBottom: "12px" }}>
+                        Quick Actions
+                    </Forms.FormTitle>
 
-                <QuickActionCard>
-                    <QuickAction
-                        Icon={LogIcon}
-                        text="Notification Log"
-                        action={openNotificationLogModal}
-                    />
-                    <QuickAction
-                        Icon={PaintbrushIcon}
-                        text="Edit QuickCSS"
-                        action={() => VencordNative.quickCss.openEditor()}
-                    />
-                    {!IS_WEB && (
-                        <>
-                            <QuickAction
-                                Icon={RestartIcon}
-                                text="Relaunch Discord"
-                                action={relaunch}
-                            />
-                            <QuickAction
-                                Icon={FolderIcon}
-                                text="Open Settings Folder"
-                                action={() => VencordNative.settings.openFolder()}
-                            />
-                        </>
-                    )}
-                    <QuickAction
-                        Icon={GithubIcon}
-                        text="View Source Code"
-                        action={() => VencordNative.native.openExternal("https://github.com/" + gitRemote)}
-                    />
-                </QuickActionCard>
-            </section>
+                    <QuickActionCard>
+                        <QuickAction
+                            Icon={LogIcon}
+                            text="Notification Log"
+                            action={openNotificationLogModal}
+                        />
+                        <QuickAction
+                            Icon={PaintbrushIcon}
+                            text="Edit QuickCSS"
+                            action={() => VencordNative.quickCss.openEditor()}
+                        />
+                        {!IS_WEB && (
+                            <>
+                                <QuickAction
+                                    Icon={RestartIcon}
+                                    text="Relaunch Discord"
+                                    action={relaunch}
+                                />
+                                <QuickAction
+                                    Icon={FolderIcon}
+                                    text="Open Settings Folder"
+                                    action={() => VencordNative.settings.openFolder()}
+                                />
+                            </>
+                        )}
+                        <QuickAction
+                            Icon={GithubIcon}
+                            text="Join 2gv5cord Server"
+                            action={() => VencordNative.native.openExternal(SERVER_INVITE)}
+                        />
+                    </QuickActionCard>
+                </section>
 
-            <Divider />
+                {/* قسم الإعدادات والمفاتيح */}
+                <section style={darkCardStyle}>
+                    <Forms.FormTitle tag="h5" style={{ color: "#ffffff" }}>
+                        2gv5cord Settings
+                    </Forms.FormTitle>
+                    <Forms.FormText className={Margins.bottom20} style={{ color: "#a1a1aa" }}>
+                        Hint: You can change the position of this settings section in the{" "}
+                        <a
+                            style={{ color: "#ffffff", textDecoration: "underline", cursor: "pointer" }}
+                            onClick={() => openPluginModal(SettingsPlugin)}
+                        >
+                            settings of the Settings plugin
+                        </a>!
+                    </Forms.FormText>
 
-            <section className={Margins.top16}>
-                <Forms.FormTitle tag="h5">Settings</Forms.FormTitle>
-                <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
-                    Hint: You can change the position of this settings section in the{" "}
-                    <a onClick={() => openPluginModal(SettingsPlugin)}>
-                        settings of the Settings plugin
-                    </a>!
-                </Forms.FormText>
+                    <div className="vc-settings-switches">
+                        <Switches />
+                    </div>
+                </section>
 
-                <div className="vc-settings-switches">
-                    <Switches />
-                </div>
-            </section>
-
-
-            <MacOSVibrancySettings />
-            <WindowsMaterialSettings />
-
-            <NotificationSection />
+                {/* قسم المظهر والإشعارات */}
+                <section style={darkCardStyle}>
+                    <MacOSVibrancySettings />
+                    <WindowsMaterialSettings />
+                    <NotificationSection />
+                </section>
+            </div>
         </SettingsTab>
     );
 }
 
-export default wrapTab(VencordSettings, "Vencord Settings");
+export default wrapTab(VencordSettings, "2gv5cord Settings");

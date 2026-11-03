@@ -27,7 +27,7 @@ function buildPluginMenu() {
     return (
         <Menu.MenuItem
             id="plugins"
-            label="2gv5cord Plugins"
+            label="vortcord Plugins"
             action={() => openSettingsTabModal(PluginsTab)}
         >
             {pluginEntries}

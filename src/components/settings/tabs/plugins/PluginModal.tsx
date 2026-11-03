@@ -46,6 +46,8 @@ const cl = classNameFactory("vc-plugin-modal-");
 const AvatarStyles = findCssClassesLazy("moreUsers", "avatar", "clickableAvatar");
 const UserRecord: Constructor<Partial<User>> = proxyLazy(() => UserStore.getCurrentUser().constructor) as any;
 
+const MODAL_BACKGROUND_GIF = "https://i.pinimg.com/originals/1a/69/40/1a694092ffa0bfdb578e716dcf466980.gif";
+
 interface PluginModalProps extends RenderModalProps {
     plugin: Plugin;
     onRestartNeeded(key: string): void;
@@ -72,7 +74,7 @@ function PluginTags({ tags }: { tags: PluginTag[]; }) {
     return (
         <div className={cl("tags")}>
             {tags.map(tag => (
-                <div key={tag} className={cl("tag")}>{tag}</div>
+                <div key={tag} className={cl("tag")} style={{ background: "rgba(255, 255, 255, 0.1)", border: "1px solid rgba(255, 255, 255, 0.2)", color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>{tag}</div>
             ))}
         </div>
     );
@@ -86,7 +88,12 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     const fallbackAuthors = useMemo(() => [makeDummyUser({ username: "Loading...", id: "-1465912127305809920" })], []);
     const [authors, setAuthors] = useState<Partial<User>[]>([]);
 
+    // للأنيميشن عند فتح النافذة
+    const [isMounted, setIsMounted] = useState(false);
+
     useEffect(() => {
+        requestAnimationFrame(() => setIsMounted(true));
+
         (async () => {
             for (const user of plugin.authors.slice(0, 6)) {
                 try {
@@ -106,7 +113,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     function renderSettings() {
         const { settings } = plugin;
         if (!hasSettings || !settings)
-            return <Forms.FormText>There are no settings for this plugin.</Forms.FormText>;
+            return <Forms.FormText style={{ color: "#a1a1aa" }}>There are no settings for this plugin.</Forms.FormText>;
 
         const options = Object.entries(settings.def).map(([key, setting]) => {
             if (setting.type === OptionType.CUSTOM) return null;
@@ -138,7 +145,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         });
 
         return (
-            <div className="vc-plugins-settings">
+            <div className="vc-plugins-settings" style={{ background: "rgba(0, 0, 0, 0.4)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
                 {options}
             </div>
         );
@@ -156,6 +163,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                         className={AvatarStyles.moreUsers}
                         onMouseEnter={onMouseEnter}
                         onMouseLeave={onMouseLeave}
+                        style={{ border: "1px solid rgba(255,255,255,0.2)", background: "rgba(0,0,0,0.6)", color: "#fff" }}
                     >
                         +{sliceCount}
                     </div>
@@ -167,86 +175,129 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     const pluginMeta = PluginMeta[plugin.name];
 
     return (
-        <Modal
-            transitionState={transitionState}
-            onClose={onClose}
-            size="lg"
-            title={
-                <div className={cl("header")}>
-                    <BaseText tag="h1" weight="semibold" size="lg">{plugin.name}</BaseText>
-                    {!pluginMeta.userPlugin && (
-                        <div className="vc-settings-modal-links">
-                            <FavoriteButton
-                                isFavorite={pluginSettings.isFavorite ?? false}
-                                onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
-                            />
-                            <WebsiteButton
-                                text="View more info"
-                                href={`https://vencord.dev/plugins/${plugin.name}`}
-                            />
-                            <GithubButton
-                                text="View source code"
-                                href={`https://github.com/${gitRemote}/tree/main/src/plugins/${pluginMeta.folderName}`}
-                            />
-                        </div>
-                    )}
-                </div>
-            }
-            subtitle={
-                <div className={cl("info")}>
-                    <div>
-                        <Forms.FormText>{plugin.description}</Forms.FormText>
-                        {!!plugin.tags?.length && <PluginTags tags={plugin.tags} />}
-                    </div>
-                </div>
-            }
-        >
-            <div className={"vc-settings-modal-content"}>
-                <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>Authors</Text>
-                    <div style={{ width: "fit-content" }}>
-                        <ErrorBoundary noop>
-                            <UserSummaryItem
-                                users={authors.length ? authors : fallbackAuthors}
-                                guildId={undefined}
-                                renderIcon={false}
-                                max={6}
-                                showDefaultAvatarsForNullUsers
-                                renderMoreUsers={renderMoreUsers}
-                                renderUser={(user: User) => (
-                                    <Clickable
-                                        className={AvatarStyles.clickableAvatar}
-                                        onClick={() => openContributorModal(user)}
-                                    >
-                                        <img
-                                            className={AvatarStyles.avatar}
-                                            src={user.getAvatarURL(void 0, 80, true)}
-                                            alt={user.username}
-                                            title={user.username}
-                                        />
-                                    </Clickable>
-                                )}
-                            />
-                        </ErrorBoundary>
-                    </div>
-                </section>
+        <div style={{
+            opacity: isMounted ? 1 : 0,
+            transform: isMounted ? "scale(1) translateY(0)" : "scale(0.95) translateY(10px)",
+            transition: "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+            position: "relative",
+            borderRadius: "16px",
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.9)",
+            border: "1px solid rgba(255, 255, 255, 0.2)"
+        }}>
+            {/* طبقة الـ GIF الخلفية */}
+            <img
+                src={MODAL_BACKGROUND_GIF}
+                alt="Modal Background"
+                style={{
+                    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                    width: "100%", height: "100%", objectFit: "cover",
+                    zIndex: 0, opacity: 0.85, pointerEvents: "none"
+                }}
+            />
 
-                {!!plugin.settingsAboutComponent && (
-                    <div className={Margins.top16}>
+            {/* تدرج لوني لتوضيح المحتوى فوق الـ GIF */}
+            <div style={{
+                position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                background: "linear-gradient(to bottom, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.95) 100%)",
+                zIndex: 1, pointerEvents: "none"
+            }} />
+
+            {/* المحتوى الفعلي للنافذة */}
+            <div style={{ position: "relative", zIndex: 2 }}>
+                <Modal
+                    transitionState={transitionState}
+                    onClose={onClose}
+                    size="lg"
+                    title={
+                        <div className={cl("header")} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.15)", paddingBottom: "16px", paddingTop: "8px" }}>
+                            <BaseText tag="h1" weight="semibold" size="lg" style={{ color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,1)", fontSize: "24px" }}>
+                                {plugin.name}
+                            </BaseText>
+                            {!pluginMeta.userPlugin && (
+                                <div className="vc-settings-modal-links">
+                                    <FavoriteButton
+                                        isFavorite={pluginSettings.isFavorite ?? false}
+                                        onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
+                                    />
+                                    <WebsiteButton
+                                        text="View more info"
+                                        href={`https://vencord.dev/plugins/${plugin.name}`}
+                                    />
+                                    <GithubButton
+                                        text="View source code"
+                                        href={`https://github.com/${gitRemote}/tree/main/src/plugins/${pluginMeta.folderName}`}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    }
+                    subtitle={
+                        <div className={cl("info")} style={{ marginTop: "12px" }}>
+                            <div>
+                                <Forms.FormText style={{ color: "#e4e4e7", fontSize: "15px", lineHeight: "1.5", textShadow: "0 1px 5px rgba(0,0,0,0.9)" }}>
+                                    {plugin.description}
+                                </Forms.FormText>
+                                {!!plugin.tags?.length && <div style={{ marginTop: "12px" }}><PluginTags tags={plugin.tags} /></div>}
+                            </div>
+                        </div>
+                    }
+                >
+                    <div className={"vc-settings-modal-content"} style={{ padding: "8px 0" }}>
                         <section>
-                            <ErrorBoundary message="An error occurred while rendering this plugin's custom Info Component">
-                                <plugin.settingsAboutComponent />
-                            </ErrorBoundary>
+                            <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)} style={{ color: "#fff", borderBottom: "1px dashed rgba(255,255,255,0.2)", paddingBottom: "8px", marginBottom: "16px" }}>
+                                Authors
+                            </Text>
+                            <div style={{ width: "fit-content", background: "rgba(0,0,0,0.3)", padding: "12px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <ErrorBoundary noop>
+                                    <UserSummaryItem
+                                        users={authors.length ? authors : fallbackAuthors}
+                                        guildId={undefined}
+                                        renderIcon={false}
+                                        max={6}
+                                        showDefaultAvatarsForNullUsers
+                                        renderMoreUsers={renderMoreUsers}
+                                        renderUser={(user: User) => (
+                                            <Clickable
+                                                className={AvatarStyles.clickableAvatar}
+                                                onClick={() => openContributorModal(user)}
+                                                style={{ transition: "transform 0.2s", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)" }}
+                                                onMouseEnter={(e: any) => e.currentTarget.style.transform = "scale(1.15) translateY(-2px)"}
+                                                onMouseLeave={(e: any) => e.currentTarget.style.transform = "scale(1) translateY(0)"}
+                                            >
+                                                <img
+                                                    className={AvatarStyles.avatar}
+                                                    src={user.getAvatarURL(void 0, 80, true)}
+                                                    alt={user.username}
+                                                    title={user.username}
+                                                />
+                                            </Clickable>
+                                        )}
+                                    />
+                                </ErrorBoundary>
+                            </div>
+                        </section>
+
+                        {!!plugin.settingsAboutComponent && (
+                            <div className={Margins.top16}>
+                                <section>
+                                    <ErrorBoundary message="An error occurred while rendering this plugin's custom Info Component">
+                                        <plugin.settingsAboutComponent />
+                                    </ErrorBoundary>
+                                </section>
+                            </div>
+                        )}
+
+                        <section style={{ marginTop: "24px" }}>
+                            <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)} style={{ color: "#fff", borderBottom: "1px dashed rgba(255,255,255,0.2)", paddingBottom: "8px", marginBottom: "16px" }}>
+                                Settings
+                            </Text>
+                            {renderSettings()}
                         </section>
                     </div>
-                )}
-
-                <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)}>Settings</Text>
-                    {renderSettings()}
-                </section>
+                </Modal>
             </div>
-        </Modal>
+        </div>
     );
 }
 

@@ -5,3 +5,27 @@
 [class*="winButtons_"] {
     display: none !important;
 }
+
+/* ========================================================
+   VO Brand Badge - ثابت ودائم في أساس النسخة
+   ======================================================== */
+div[class*="pluginCard_"] h3::after,
+span[class*="pluginTitle_"]::after {
+    content: "VO" !important;
+    display: inline-block !important;
+    background: #000000 !important;
+    color: #ef4444 !important;
+    border: 1px solid #ef4444 !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    margin-left: 8px !important;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.8) !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4) !important;
+    vertical-align: middle !important;
+    letter-spacing: 0.5px !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}

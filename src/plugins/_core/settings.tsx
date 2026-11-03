@@ -80,7 +80,7 @@ interface SettingsLayoutBuilder {
 const settings = definePluginSettings({
     settingsLocation: {
         type: OptionType.SELECT,
-        description: "Where to put the 2gv5cord section",
+        description: "Where to put the vortcord section",
         options: [
             { label: "At the very top", value: "top" },
             { label: "Above the Nitro section", value: "aboveNitro", default: true },
@@ -170,48 +170,48 @@ export default definePlugin({
         const vencordEntries: SettingsLayoutNode[] = [
             buildEntry({
                 key: "vencord_main",
-                title: "2gv5cord",
-                panelTitle: "2gv5cord Settings",
+                title: "vortcord",
+                panelTitle: "vortcord Settings",
                 Component: VencordTab,
                 Icon: MainSettingsIcon
             }),
             buildEntry({
                 key: "vencord_plugins",
-                title: "2gv5cord Plugins",
+                title: "vortcord Plugins",
                 Component: PluginsTab,
                 Icon: PluginsIcon
             }),
             buildEntry({
                 key: "vencord_themes",
-                title: "2gv5cord Themes",
+                title: "vortcord Themes",
                 Component: ThemesTab,
                 Icon: PaintbrushIcon
             }),
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "vencord_updater",
-                title: "2gv5cord Updater",
-                panelTitle: "2gv5cord Updater",
+                title: "vortcord Updater",
+                panelTitle: "vortcord Updater",
                 Component: UpdaterTab,
                 Icon: UpdaterIcon
             }),
             buildEntry({
                 key: "vencord_cloud",
-                title: "2gv5cord Cloud",
-                panelTitle: "2gv5cord Cloud",
+                title: "vortcord Cloud",
+                panelTitle: "vortcord Cloud",
                 Component: CloudTab,
                 Icon: CloudIcon
             }),
             buildEntry({
                 key: "vencord_backup_restore",
-                title: "2gv5cord Backup & Restore",
-                panelTitle: "2gv5cord Backup & Restore",
+                title: "vortcord Backup & Restore",
+                panelTitle: "vortcord Backup & Restore",
                 Component: BackupAndRestoreTab,
                 Icon: BackupRestoreIcon
             }),
             !IS_STANDALONE && PatchHelperTab && buildEntry({
                 key: "vencord_patch_helper",
-                title: "2gv5cord Patch Helper",
-                panelTitle: "2gv5cord Patch Helper",
+                title: "vortcord Patch Helper",
+                panelTitle: "vortcord Patch Helper",
                 Component: PatchHelperTab,
                 Icon: PatchHelperIcon
             }),
@@ -233,7 +233,7 @@ export default definePlugin({
         const vencordSection: SettingsLayoutNode = {
             key: "vencord_section",
             type: LayoutTypes.SECTION,
-            useTitle: () => "2gv5cord Settings",
+            useTitle: () => "vortcord Settings",
             buildLayout: () => vencordEntries
         };
 

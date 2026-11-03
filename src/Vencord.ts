@@ -185,3 +185,50 @@ document.addEventListener("DOMContentLoaded", () => {
         enableStyle(nativeTitleBarStyles);
     }
 }, { once: true });
+// ========================================================
+// VO Brand Core Badge - حقن دائم وشامل لجميع البلاجينات
+// ========================================================
+(function injectVOCoreBadges() {
+    const styleId = "vo-core-branding-system";
+
+    const apply = () => {
+        if (typeof document === "undefined" || document.getElementById(styleId)) return;
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = `
+            /* استهداف كروت البلاجينات بجميع سلكترات Vencord القديمة والجديدة */
+            div[class*="pluginCard"] h3::after,
+            div[class*="vc-plugins-card"] h3::after,
+            div[class*="addonCard"] h3::after,
+            div[class*="vc-addon-card"] h3::after,
+            span[class*="pluginTitle"]::after {
+                content: "VO" !important;
+                display: inline-block !important;
+                background: #000000 !important;
+                color: #ef4444 !important;
+                border: 1px solid #ef4444 !important;
+                font-size: 10px !important;
+                font-weight: 900 !important;
+                line-height: 1 !important;
+                padding: 2px 6px !important;
+                border-radius: 4px !important;
+                margin-left: 8px !important;
+                text-shadow: 0 0 6px rgba(239, 68, 68, 0.8) !important;
+                box-shadow: 0 0 8px rgba(239, 68, 68, 0.4) !important;
+                vertical-align: middle !important;
+                letter-spacing: 0.5px !important;
+                pointer-events: none !important;
+                user-select: none !important;
+            }
+        `;
+        (document.head || document.documentElement).appendChild(style);
+    };
+
+    if (typeof document !== "undefined") {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", apply, { once: true });
+        } else {
+            apply();
+        }
+    }
+})();

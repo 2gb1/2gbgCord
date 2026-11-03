@@ -48,29 +48,67 @@ import { UIElementsButton } from "./UIElements";
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
 
+// الـ GIF الجديد اللي طلبته
+const NEW_BANNER_GIF = "https://i.pinimg.com/originals/67/38/63/67386362c44f180455b7668fe70d5059.gif";
+
+// البانر العلوي بالثيم القديم المرتب مع الـ GIF الجديد
 function ReloadRequiredCard({ required }: { required: boolean; }) {
     return (
-        <Card variant={required ? "warning" : "normal"} className={cl("info-card")}>
-            {required
-                ? (
-                    <>
-                        <HeadingTertiary>Restart required!</HeadingTertiary>
-                        <Paragraph className={cl("dep-text")}>
-                            Restart now to apply new plugins and their settings
-                        </Paragraph>
-                        <Button onClick={() => location.reload()} className={cl("restart-button")}>
-                            Restart
-                        </Button>
-                    </>
-                )
-                : (
-                    <>
-                        <HeadingTertiary>Plugin Management</HeadingTertiary>
-                        <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
-                        <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
-                    </>
-                )}
-        </Card>
+        <div style={{
+            background: required ? "linear-gradient(90deg, #3a1a1a 0%, #1a0a0a 100%)" : "linear-gradient(90deg, #111115 0%, #09090b 100%)",
+            border: `1px solid ${required ? "rgba(255, 60, 60, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
+            borderRadius: "12px",
+            padding: "20px 24px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)"
+        }}>
+            <div style={{ flex: 1 }}>
+                {required
+                    ? (
+                        <>
+                            <HeadingTertiary style={{ color: "#ff4d4d", fontSize: "18px", fontWeight: "bold" }}>
+                                Restart required!
+                            </HeadingTertiary>
+                            <Paragraph style={{ color: "#d1d1d6", marginTop: "6px" }}>
+                                Restart now to apply new plugins and their settings
+                            </Paragraph>
+                            <Button onClick={() => location.reload()} style={{ marginTop: "12px", background: "#ff4d4d", color: "#fff", fontWeight: "bold" }}>
+                                Restart
+                            </Button>
+                        </>
+                    )
+                    : (
+                        <>
+                            <HeadingTertiary style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold" }}>
+                                Plugin Management
+                            </HeadingTertiary>
+                            <Paragraph style={{ color: "#a1a1aa", marginTop: "6px", fontSize: "14px" }}>
+                                Press the cog wheel or info icon to get more info on a plugin.
+                            </Paragraph>
+                            <Paragraph style={{ color: "#a1a1aa", marginTop: "4px", fontSize: "14px" }}>
+                                Plugins with a cog wheel have settings you can modify!
+                            </Paragraph>
+                        </>
+                    )}
+            </div>
+            <div>
+                <img
+                    src={NEW_BANNER_GIF}
+                    alt="Banner"
+                    style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "12px",
+                        objectFit: "cover",
+                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)"
+                    }}
+                />
+            </div>
+        </div>
     );
 }
 
@@ -100,14 +138,14 @@ function ExcludedPluginsList({ search }: { search: string; }) {
     };
 
     return (
-        <Paragraph className={Margins.top16}>
+        <Paragraph className={Margins.top16} style={{ color: "#a1a1aa" }}>
             {matchingExcludedPlugins.length
                 ? <>
-                    <Paragraph>Are you looking for:</Paragraph>
-                    <ul>
+                    <Paragraph style={{ color: "#fff" }}>Are you looking for:</Paragraph>
+                    <ul style={{ color: "#a1a1aa" }}>
                         {matchingExcludedPlugins.map(([name, reason]) => (
                             <li key={name}>
-                                <b>{name}</b>: Only available on the {ExcludedReasons[reason]}
+                                <b style={{ color: "#fff" }}>{name}</b>: Only available on the {ExcludedReasons[reason]}
                             </li>
                         ))}
                     </ul>
@@ -190,7 +228,7 @@ function PluginSettings() {
 
         return (
             plugin.name.toLowerCase().includes(search) ||
-            plugin.name.match(/[A-Z]/g)?.join("").toLowerCase().includes(search) || // acronyms like BF for BetterFolders
+            plugin.name.match(/[A-Z]/g)?.join("").toLowerCase().includes(search) ||
             plugin.description.toLowerCase().includes(search) ||
             plugin.searchTerms?.some(t => t.toLowerCase().includes(search))
         );
@@ -227,7 +265,7 @@ function PluginSettings() {
 
         if (isRequired) {
             const tooltipText = p.required || !depMap[p.name]
-                ? "This plugin is required for Vencord to function."
+                ? "This plugin is required for 2gv5cord to function."
                 : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
 
             requiredPlugins.push(
@@ -259,79 +297,148 @@ function PluginSettings() {
 
     return (
         <SettingsTab>
-            <ReloadRequiredCard required={changes.hasChanges} />
-
-            <UIElementsButton />
-
-            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Filters
-            </HeadingTertiary>
-
-            <ErrorBoundary noop>
-                <TextInput
-                    inputClassName={cl("filter-control")}
-                    placeholder="Search for a plugin..."
-                    value={searchValue.value}
-                    onChange={onSearch}
-                    autoFocus
-                />
-            </ErrorBoundary>
-
-            <ErrorBoundary noop>
-                <div className={classes(Margins.bottom20, Margins.top8, cl("filter-controls"))}>
-                    <Select
-                        options={[
-                            { label: "Show All", value: SearchStatus.ALL, default: true },
-                            { label: "Show Favorites", value: SearchStatus.FAVORITES },
-                            { label: "Show Enabled", value: SearchStatus.ENABLED },
-                            { label: "Show Disabled", value: SearchStatus.DISABLED },
-                            { label: "Show New", value: SearchStatus.NEW },
-                            hasUserPlugins && { label: "Show UserPlugins", value: SearchStatus.USER_PLUGINS },
-                            { label: "Show API Plugins", value: SearchStatus.API_PLUGINS },
-                        ].filter(isTruthy)}
-                        serialize={String}
-                        select={status => setSearchValue(prev => ({ ...prev, status }))}
-                        isSelected={v => v === searchValue.status}
-                        closeOnSelect={true}
-                        placeholder="Filter by Type"
-                    />
-                    <SearchableSelect
-                        options={PluginTags.map(tag => ({ label: tag, value: tag }))}
-                        value={searchValue.tags}
-                        onChange={tags => setSearchValue(prev => ({ ...prev, tags }))}
-                        closeOnSelect={false}
-                        placeholder="Filter by Tags"
-                        multi
-                    />
-                </div>
-            </ErrorBoundary>
-
-            <HeadingTertiary className={Margins.top20}>Plugins</HeadingTertiary>
-
-            {plugins.length || requiredPlugins.length
-                ? (
-                    <div className={cl("grid")}>
-                        {plugins.length
-                            ? plugins
-                            : <Paragraph>No plugins meet the search criteria.</Paragraph>
-                        }
-                    </div>
-                )
-                : <ExcludedPluginsList search={search} />
-            }
-
-
-            <Divider className={Margins.top20} />
-
-            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Required Plugins
-            </HeadingTertiary>
-
-            <div className={cl("grid")}>
-                {requiredPlugins.length
-                    ? requiredPlugins
-                    : <Paragraph>No plugins meet the search criteria.</Paragraph>
+            {/* CSS احترافي للأنيميشن وتنسيق البلاكنات والخط الفاصل */}
+            <style>{`
+                .vc-2gv5-dark-plugins {
+                    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
+                    background-size: 20px 20px;
+                    min-height: 100%;
+                    padding-bottom: 30px;
                 }
+                
+                /* تصميم بطاقة البلاكن الأساسي */
+                .vc-2gv5-dark-plugins .vc-plugins-grid > * {
+                    background: linear-gradient(145deg, #09090b 0%, #121216 100%) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+                    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                    position: relative;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                /* تأثير الأنيميشن عند وضع الماوس (Hover) */
+                .vc-2gv5-dark-plugins .vc-plugins-grid > *:hover {
+                    border-color: rgba(255, 255, 255, 0.25) !important;
+                    transform: translateY(-4px) !important;
+                    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7) !important;
+                }
+
+                /* الخط الفاصل تحت اسم البلاكن (زي ما طلبت في الصورة) */
+                .vc-2gv5-dark-plugins .vc-plugins-grid > * > :first-child {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    padding-bottom: 12px !important;
+                    margin-bottom: 12px !important;
+                }
+
+                /* لمعان خفيف من فوق لما تحط الماوس */
+                .vc-2gv5-dark-plugins .vc-plugins-grid > *::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+                .vc-2gv5-dark-plugins .vc-plugins-grid > *:hover::before {
+                    opacity: 1;
+                }
+
+                /* تنسيق الفلاتر والبحث */
+                .vc-2gv5-dark-plugins input,
+                .vc-2gv5-dark-plugins [class*="select-"],
+                .vc-2gv5-dark-plugins [class*="control-"] {
+                    background-color: #050505 !important;
+                    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                    color: #ffffff !important;
+                    transition: border-color 0.2s;
+                }
+                .vc-2gv5-dark-plugins input:focus {
+                    border-color: rgba(255, 255, 255, 0.5) !important;
+                }
+                .vc-2gv5-dark-plugins h5, .vc-2gv5-dark-plugins h3 {
+                    color: #ffffff !important;
+                    font-weight: bold;
+                }
+            `}</style>
+
+            <div className="vc-2gv5-dark-plugins">
+                <ReloadRequiredCard required={changes.hasChanges} />
+
+                <UIElementsButton />
+
+                <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
+                    Filters
+                </HeadingTertiary>
+
+                <ErrorBoundary noop>
+                    <TextInput
+                        inputClassName={cl("filter-control")}
+                        placeholder="Search for a plugin..."
+                        value={searchValue.value}
+                        onChange={onSearch}
+                        autoFocus
+                    />
+                </ErrorBoundary>
+
+                <ErrorBoundary noop>
+                    <div className={classes(Margins.bottom20, Margins.top8, cl("filter-controls"))}>
+                        <Select
+                            options={[
+                                { label: "Show All", value: SearchStatus.ALL, default: true },
+                                { label: "Show Favorites ⭐", value: SearchStatus.FAVORITES },
+                                { label: "Show Enabled", value: SearchStatus.ENABLED },
+                                { label: "Show Disabled", value: SearchStatus.DISABLED },
+                                { label: "Show New", value: SearchStatus.NEW },
+                                hasUserPlugins && { label: "Show UserPlugins", value: SearchStatus.USER_PLUGINS },
+                                { label: "Show API Plugins", value: SearchStatus.API_PLUGINS },
+                            ].filter(isTruthy)}
+                            serialize={String}
+                            select={status => setSearchValue(prev => ({ ...prev, status }))}
+                            isSelected={v => v === searchValue.status}
+                            closeOnSelect={true}
+                            placeholder="Filter by Type"
+                        />
+                        <SearchableSelect
+                            options={PluginTags.map(tag => ({ label: tag, value: tag }))}
+                            value={searchValue.tags}
+                            onChange={tags => setSearchValue(prev => ({ ...prev, tags }))}
+                            closeOnSelect={false}
+                            placeholder="Filter by Tags"
+                            multi
+                        />
+                    </div>
+                </ErrorBoundary>
+
+                <HeadingTertiary className={Margins.top20}>2gv5cord Plugins</HeadingTertiary>
+
+                {plugins.length || requiredPlugins.length
+                    ? (
+                        <div className={cl("grid")}>
+                            {plugins.length
+                                ? plugins
+                                : <Paragraph style={{ color: "#a1a1aa" }}>No plugins meet the search criteria.</Paragraph>
+                            }
+                        </div>
+                    )
+                    : <ExcludedPluginsList search={search} />
+                }
+
+                <Divider className={Margins.top20} />
+
+                <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
+                    Required Plugins
+                </HeadingTertiary>
+
+                <div className={cl("grid")}>
+                    {requiredPlugins.length
+                        ? requiredPlugins
+                        : <Paragraph style={{ color: "#a1a1aa" }}>No required plugins meet the search criteria.</Paragraph>
+                    }
+                </div>
             </div>
         </SettingsTab >
     );
@@ -346,4 +453,4 @@ function makeDependencyList(deps: string[]) {
     );
 }
 
-export default wrapTab(PluginSettings, "Plugins");
+export default wrapTab(PluginSettings, "2gv5cord Plugins");

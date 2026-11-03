@@ -1,8 +1,8 @@
 {
-    "name": "2gv5cord",
+    "name": "vortcord",
     "private": "true",
     "version": "1.15.12",
-    "description": "2gv5cord Custom Client",
+    "description": "vortcord Custom Client",
     "homepage": "https://github.com/Vendicated/Vencord#readme",
     "bugs": {
         "url": "https://github.com/Vendicated/Vencord/issues"
